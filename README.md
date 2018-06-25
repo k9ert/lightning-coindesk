@@ -1,3 +1,10 @@
+A fork of coindesk showing in one commit what needs to be changed in coindesk in order to:
+* use macaroons
+* centralize the stub-generation
+* use a tls-cert
+
+
+----------------------------------------------------
 # Lightning Coindesk
 A tutorial news app exemplifying Lightning Network micropayments integration.
 

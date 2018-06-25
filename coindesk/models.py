@@ -1,4 +1,5 @@
 from coindesk import rpc_pb2 as ln, rpc_pb2_grpc as lnrpc
+from coindesk import macaroon, stub
 
 from django.db import models
 from django.conf import settings
@@ -76,10 +77,8 @@ class Payment(models.Model):
         Generates a new invoice
         """
         assert self.status == 'pending_invoice', "Already generated invoice"
-        channel = grpc.insecure_channel(settings.LND_RPCHOST)
-        stub = lnrpc.LightningStub(channel)
 
-        add_invoice_resp = stub.AddInvoice(ln.Invoice(value=settings.MIN_VIEW_AMOUNT, memo="User '{}' | ArticleId {}".format(user.username, article.id)))
+        add_invoice_resp = stub().AddInvoice(ln.Invoice(value=settings.MIN_VIEW_AMOUNT, memo="User '{}' | ArticleId {}".format(user.username, article.id)), metadata=[('macaroon', macaroon())])
         r_hash_base64 = codecs.encode(add_invoice_resp.r_hash, 'base64')
         self.r_hash = r_hash_base64.decode('utf-8')
         self.payment_request = add_invoice_resp.payment_request
@@ -93,12 +92,9 @@ class Payment(models.Model):
         if self.status == 'pending_invoice':
             return False
 
-        channel = grpc.insecure_channel(settings.LND_RPCHOST)
-        stub = lnrpc.LightningStub(channel)
-
         r_hash_base64 = self.r_hash.encode('utf-8')
         r_hash_bytes = str(codecs.decode(r_hash_base64, 'base64'))
-        invoice_resp = stub.LookupInvoice(ln.PaymentHash(r_hash=r_hash_bytes))
+        invoice_resp = stub().LookupInvoice(ln.PaymentHash(r_hash=r_hash_bytes),metadata=[('macaroon', macaroon())])
 
         if invoice_resp.settled:
             # Payment complete

@@ -1,0 +1,10 @@
+{
+    "python.pythonPath": "${workspaceFolder}/deskenv/bin/python",
+    "python.linting.pylintEnabled": false,
+    "files.exclude": {
+        "**/*.pyc": true,
+        //"**/*.pyc": { "when": "$(basename).py"}        
+        
+        
+    }
+}

@@ -5,14 +5,15 @@ from django.contrib.auth.models import User
 
 import grpc
 
+import os
+import codecs
+from coindesk import macaroon, stub
+
 
 class SignatureBackend(object):
 
     def authenticate(self, request, signature, csrf_token, username=None):
-        channel = grpc.insecure_channel(settings.LND_RPCHOST)
-        stub = lnrpc.LightningStub(channel)
-
-        verifymessage_resp = stub.VerifyMessage(ln.VerifyMessageRequest(msg=csrf_token, signature=signature))
+        verifymessage_resp = stub().VerifyMessage(ln.VerifyMessageRequest(msg=csrf_token, signature=signature), metadata=[('macaroon', macaroon())])
 
         if not verifymessage_resp.valid:
             print "Invalid signature"
